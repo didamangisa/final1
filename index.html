@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>ISTRAM Çeviri Yükleme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input[type="file"] {
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #004a99;
+        }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0066cc;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+    <script>
+        async function compilePatterns() {
+            const note = document.getElementById('notification');
+            try {
+                note.textContent = 'Desenler derleniyor...';
+                note.style.display = 'block';
+                const res = await fetch('/compile');
+                const data = await res.json();
+                if (res.ok && data.status === 'ok') {
+                    note.textContent = 'Desenler başarıyla derlendi';
+                } else if (data.error) {
+                    note.textContent = 'HATA: ' + data.error;
+                } else {
+                    note.textContent = 'Desen derleme başarısız oldu';
+                }
+            } catch (e) {
+                console.error('Derleme hatası:', e);
+                note.textContent = 'Derleme sırasında hata oluştu';
+            } finally {
+                setTimeout(() => note.style.display = 'none', 3500);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('compile-btn').addEventListener('click', compilePatterns);
+        });
+    </script>
+</head>
+<body>
+    <h2>ISTRAM Teknik Çeviri Uygulaması</h2>
+    <button type="button" id="compile-btn">Yeniden Derle</button>
+    <form method="post" enctype="multipart/form-data">
+        <label for="dosya">Çevrilecek Excel Dosyası (.xlsx)</label>
+        <input type="file" name="dosya" id="dosya" accept=".xlsx" required>
+
+        <label for="sozluk">Teknik Terimler Sözlüğü (.xlsx)</label>
+        <input type="file" name="sozluk" id="sozluk" accept=".xlsx" required>
+
+        <button type="submit">Çeviriye Başla</button>
+    </form>
+    <div id="notification"></div>
+</body>
+</html>
